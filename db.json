@@ -1,0 +1,318 @@
+{
+  "templates": [
+    {
+      "id": "1",
+      "messageTypeId": "6333",
+      "messageName": "Zelle Add Payment Recipient",
+      "channel": "External Email",
+      "language": "English",
+      "type": "Email",
+      "content": "",
+      "status": "active",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "updatedAt": "2024-01-15T10:00:00Z",
+      "widgets": [
+        {
+          "id": "widget-1",
+          "type": "HeaderWidget",
+          "components": [
+            {
+              "id": "comp-1",
+              "type": "Subject",
+              "content": "Payment Recipient Added Successfully",
+              "properties": {
+                "fontSize": "16px",
+                "fontWeight": "bold"
+              },
+              "order": 0
+            }
+          ],
+          "order": 0
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "messageTypeId": "7445",
+      "messageName": "Account Security Alert",
+      "channel": "External Email",
+      "language": "English",
+      "type": "Email",
+      "content": "",
+      "status": "active",
+      "createdAt": "2024-01-16T14:30:00Z",
+      "updatedAt": "2024-01-16T14:30:00Z",
+      "widgets": []
+    },
+    {
+      "id": "3",
+      "messageTypeId": "8901",
+      "messageName": "Weekly Promotion Alert",
+      "channel": "Push",
+      "language": "Spanish",
+      "type": "Push",
+      "content": "Your balance is low then use this money",
+      "status": "draft",
+      "createdAt": "2024-01-17T09:15:00Z",
+      "updatedAt": "2025-07-22T17:05:23.192Z",
+      "widgets": []
+    },
+    {
+      "id": "1753183031757",
+      "messageTypeId": "101",
+      "messageName": "Account Update",
+      "channel": "External Email",
+      "language": "English",
+      "status": "draft",
+      "content": "",
+      "createdAt": "2025-07-22T11:17:11.757Z",
+      "updatedAt": "2025-07-22T11:17:11.757Z",
+      "type": "Email",
+      "widgets": [
+        {
+          "id": "ac1bb1a3-2490-425c-90ed-9a08fd854c0c",
+          "type": "HeaderWidget",
+          "components": [
+            {
+              "id": "cb5c641c-d009-4fd9-82b4-3968037ce30a",
+              "type": "Subject",
+              "content": "Account update sample Subject Message",
+              "properties": {
+                "fontSize": "16px",
+                "fontWeight": "bold"
+              },
+              "order": 0,
+              "widgetId": "ac1bb1a3-2490-425c-90ed-9a08fd854c0c"
+            }
+          ],
+          "order": 0
+        },
+        {
+          "id": "1d6d24c0-3fa2-4051-b8e1-87c657827a5e",
+          "type": "BodyWidget",
+          "components": [
+            {
+              "id": "7dee50c9-4534-4e0a-be71-b0240cfd2dd6",
+              "type": "Conditions",
+              "content": "Conditional content block",
+              "properties": {
+                "condition": "if user.premium",
+                "display": "block",
+                "conditionRules": [
+                  {
+                    "logic": "AND",
+                    "conditions": [
+                      {
+                        "field": "user.type",
+                        "operator": "is",
+                        "value": "10"
+                      }
+                    ],
+                    "displayValue": "Value added"
+                  }
+                ]
+              },
+              "order": 0,
+              "widgetId": "1d6d24c0-3fa2-4051-b8e1-87c657827a5e"
+            }
+          ],
+          "order": 1
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "email": "admin@company.com",
+      "role": "Admin",
+      "status": "active",
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "2",
+      "username": "editor",
+      "email": "editor@company.com",
+      "role": "Editor",
+      "status": "active",
+      "createdAt": "2024-01-02T00:00:00Z"
+    },
+    {
+      "id": "3",
+      "username": "viewer",
+      "email": "viewer@company.com",
+      "role": "Viewer",
+      "status": "active",
+      "createdAt": "2024-01-03T00:00:00Z"
+    }
+  ],
+  "roles": [
+    {
+      "id": "1",
+      "name": "Admin",
+      "description": "Full access to all features and settings",
+      "permissions": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ],
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Editor",
+      "description": "Can create, read, and update templates but cannot delete",
+      "permissions": [
+        "create",
+        "read",
+        "update"
+      ],
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "3",
+      "name": "Viewer",
+      "description": "Read-only access to templates and reports",
+      "permissions": [
+        "read"
+      ],
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "tests": [
+    {
+      "id": "1",
+      "messageType": "6333",
+      "messageName": "Zelle Add Payment Recipient",
+      "run": true,
+      "runType": "Functional",
+      "status": "Passed",
+      "reportUrl": "/reports/zelle-payment-test.pdf",
+      "initiatedBy": "john.doe@company.com",
+      "lastRunDate": "2024-01-15T16:45:00Z"
+    }
+  ],
+  "onboard": [
+    {
+      "id": "1",
+      "name": "High CPU Alert",
+      "jiraId": "PROJ-1234",
+      "status": "Draft",
+      "fields": {
+        "field1": "Alert Type: Security",
+        "field2": "Priority: High",
+        "field3": "Category: Authentication"
+      },
+      "selectedTemplates": [
+        "1",
+        "2"
+      ],
+      "selectedFeatures": [
+        "Email Notifications",
+        "Push Notifications"
+      ],
+      "createdAt": "2024-01-20T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Memory Usage Alert",
+      "jiraId": "PROJ-5678",
+      "status": "Published",
+      "fields": {
+        "field1": "Alert Type: Performance",
+        "field2": "Priority: Medium",
+        "field3": "Category: System",
+        "field4": "Severity: Warning",
+        "field5": "Department: DevOps",
+        "field6": "Escalation Level: 1",
+        "field7": "Response Time: 30 minutes",
+        "field8": "Notification Frequency: Every 15 minutes",
+        "field9": "Target Audience: DevOps Team",
+        "field10": "Compliance Required: No"
+      },
+      "selectedTemplates": [
+        "3"
+      ],
+      "selectedFeatures": [
+        "SMS Alerts",
+        "Webhook Integration"
+      ],
+      "createdAt": "2024-01-18T14:30:00Z"
+    },
+    {
+      "id": "3",
+      "name": "Database Connection Alert",
+      "jiraId": "PROJ-9012",
+      "status": "Draft",
+      "fields": {
+        "field1": "Alert Type: Database",
+        "field2": "Priority: Critical",
+        "field3": "Category: Infrastructure",
+        "field4": "Severity: High",
+        "field5": "Department: Database Team",
+        "field6": "Escalation Level: 3",
+        "field7": "Response Time: 5 minutes",
+        "field8": "Notification Frequency: Immediate",
+        "field9": "Target Audience: All Engineers",
+        "field10": "Compliance Required: Yes"
+      },
+      "selectedTemplates": [
+        "1",
+        "4"
+      ],
+      "selectedFeatures": [
+        "Email Notifications",
+        "Push Notifications",
+        "SMS Alerts"
+      ],
+      "createdAt": "2024-01-22T09:15:00Z"
+    },
+    {
+      "id": "1753205930741",
+      "name": "Account Update Alert ",
+      "jiraId": "1234",
+      "status": "Draft",
+      "fields": {
+        "field1": "Alert Type: Security",
+        "field2": "Priority: High",
+        "field3": "Category: Authentication",
+        "field4": "Severity: Critical",
+        "field5": "Department: IT Security",
+        "field6": "Escalation Level: 2",
+        "field7": "Response Time: 15 minutes",
+        "field8": "Notification Frequency: Immediate",
+        "field9": "Target Audience: All Users",
+        "field10": "Compliance Required: Yes"
+      },
+      "selectedTemplates": [
+        "1753183031757"
+      ],
+      "selectedFeatures": [
+        "Email Notifications",
+        "Push Notifications",
+        "Webhook Integration"
+      ],
+      "createdAt": "2025-07-22T17:38:50.741Z"
+    }
+  ],
+  "jiraData": [
+    {
+      "jiraId": "PROJ-1234",
+      "data": {
+        "field1": "Alert Type: Security",
+        "field2": "Priority: High",
+        "field3": "Category: Authentication",
+        "field4": "Severity: Critical",
+        "field5": "Department: IT Security",
+        "field6": "Escalation Level: 2",
+        "field7": "Response Time: 15 minutes",
+        "field8": "Notification Frequency: Immediate",
+        "field9": "Target Audience: All Users",
+        "field10": "Compliance Required: Yes"
+      },
+      "id": "0546"
+    }
+  ]
+}
