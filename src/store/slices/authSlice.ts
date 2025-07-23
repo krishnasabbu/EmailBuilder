@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type UserRole = 'Admin' | 'Editor' | 'Viewer';
@@ -25,15 +26,23 @@ const initialState: AuthState = {
 };
 
 const getRolePermissions = (role: UserRole): Permission[] => {
+  console.log('🔐 Getting permissions for role:', role);
   switch (role) {
     case 'Admin':
-      return ['create', 'read', 'update', 'delete'];
+      const adminPerms = ['create', 'read', 'update', 'delete'] as Permission[];
+      console.log('✅ Admin permissions assigned:', adminPerms);
+      return adminPerms;
     case 'Editor':
-      return ['create', 'read', 'update'];
+      const editorPerms = ['create', 'read', 'update'] as Permission[];
+      console.log('✅ Editor permissions assigned:', editorPerms);
+      return editorPerms;
     case 'Viewer':
-      return ['read'];
+      const viewerPerms = ['read'] as Permission[];
+      console.log('✅ Viewer permissions assigned:', viewerPerms);
+      return viewerPerms;
     default:
-      return [];
+      console.log('⚠️ Unknown role, defaulting to read-only');
+      return ['read'] as Permission[];
   }
 };
 
@@ -42,11 +51,18 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     login: (state, action: PayloadAction<User>) => {
+      console.log('🔑 Login action triggered for user:', action.payload);
       state.isAuthenticated = true;
       state.user = action.payload;
       state.permissions = getRolePermissions(action.payload.role);
+      console.log('🎯 Final auth state:', {
+        user: state.user?.username,
+        role: state.user?.role,
+        permissions: state.permissions
+      });
     },
     logout: (state) => {
+      console.log('🚪 User logged out');
       state.isAuthenticated = false;
       state.user = null;
       state.permissions = [];

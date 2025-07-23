@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../hooks/useRedux';
-import { setRoles, addRole, updateRole, deleteRole } from '../store/slices/rbacSlice';
+import { usePermissions } from '../hooks/useRedux';
+import { useGetRolesQuery, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import InputField from '../components/ui/InputField';
 import MultiSelect from '../components/ui/MultiSelect';
 import { Plus, Edit, Trash2, Shield } from 'lucide-react';
-import rolesData from '../data/roles.json';
 
 const RbacRolesPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { roles } = useAppSelector(state => state.rbac);
-  const { permissions } = useAppSelector(state => state.auth);
+  const { hasPermission } = usePermissions();
+  
+  const { data: roles = [], isLoading, error } = useGetRolesQuery();
+  const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
+  const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
+  const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
+  
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingRole, setEditingRole] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -20,13 +23,7 @@ const RbacRolesPage: React.FC = () => {
     permissions: [] as string[],
   });
 
-  useEffect(() => {
-    dispatch(setRoles(rolesData));
-  }, [dispatch]);
 
-  const hasPermission = (permission: string) => {
-    return permissions.includes(permission as any);
-  };
 
   const permissionOptions = [
     { value: 'create', label: 'Create' },
@@ -35,31 +32,34 @@ const RbacRolesPage: React.FC = () => {
     { value: 'delete', label: 'Delete' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingRole) {
-      dispatch(updateRole({
-        ...editingRole,
-        ...formData,
-        updatedAt: new Date().toISOString(),
-      }));
-      setEditingRole(null);
-    } else {
-      dispatch(addRole({
-        id: Date.now().toString(),
-        ...formData,
-        name: formData.name as any,
-        createdAt: new Date().toISOString(),
-      }));
+    try {
+      if (editingRole) {
+        await updateRole({
+          ...editingRole,
+          ...formData,
+          name: formData.name as any,
+        }).unwrap();
+        setEditingRole(null);
+      } else {
+        await createRole({
+          ...formData,
+          name: formData.name as any,
+        }).unwrap();
+      }
+      
+      setFormData({
+        name: '',
+        description: '',
+        permissions: [],
+      });
+      setShowAddForm(false);
+    } catch (error) {
+      console.error('Failed to save role:', error);
+      alert('Failed to save role. Please try again.');
     }
-    
-    setFormData({
-      name: '',
-      description: '',
-      permissions: [],
-    });
-    setShowAddForm(false);
   };
 
   const handleEdit = (role: any) => {
@@ -72,9 +72,14 @@ const RbacRolesPage: React.FC = () => {
     setShowAddForm(true);
   };
 
-  const handleDelete = (roleId: string) => {
+  const handleDelete = async (roleId: string) => {
     if (confirm('Are you sure you want to delete this role?')) {
-      dispatch(deleteRole(roleId));
+      try {
+        await deleteRole(roleId).unwrap();
+      } catch (error) {
+        console.error('Failed to delete role:', error);
+        alert('Failed to delete role. Please try again.');
+      }
     }
   };
 
@@ -93,11 +98,27 @@ const RbacRolesPage: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-500 mb-4">Failed to load roles</div>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-primary-700 dark:text-white">
             Role Management
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -105,7 +126,10 @@ const RbacRolesPage: React.FC = () => {
           </p>
         </div>
         {hasPermission('create') && (
-          <Button onClick={() => setShowAddForm(true)}>
+          <Button 
+            onClick={() => setShowAddForm(true)}
+            className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          >
             <Plus className="h-5 w-5 mr-2" />
             Add Role
           </Button>
@@ -113,8 +137,8 @@ const RbacRolesPage: React.FC = () => {
       </div>
 
       {showAddForm && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+        <Card className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500">
+          <h2 className="text-xl font-semibold text-primary-700 dark:text-white mb-4">
             {editingRole ? 'Edit Role' : 'Add New Role'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -138,12 +162,17 @@ const RbacRolesPage: React.FC = () => {
               required
             />
             <div className="flex space-x-3">
-              <Button type="submit" variant="primary">
+              <Button 
+                type="submit" 
+                variant="primary"
+                className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
                 {editingRole ? 'Update Role' : 'Add Role'}
               </Button>
               <Button
                 type="button"
                 variant="outline"
+                className="border-primary-300 text-primary-600 hover:bg-primary-50"
                 onClick={() => {
                   setShowAddForm(false);
                   setEditingRole(null);
@@ -163,12 +192,12 @@ const RbacRolesPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {roles.map((role) => (
-          <Card key={role.id} className="p-6">
+          <Card key={role.id} className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent-500">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <Shield className="h-8 w-8 text-blue-500" />
+                <Shield className="h-8 w-8 text-primary-500" />
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                  <h3 className="font-semibold text-primary-700 dark:text-white">
                     {role.name}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -205,7 +234,7 @@ const RbacRolesPage: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(role)}
-                    className="flex-1"
+                    className="flex-1 border-primary-300 text-primary-600 hover:bg-primary-50"
                   >
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
@@ -216,6 +245,7 @@ const RbacRolesPage: React.FC = () => {
                     variant="danger"
                     size="sm"
                     onClick={() => handleDelete(role.id)}
+                   disabled={isDeleting}
                     className="px-3"
                   >
                     <Trash2 className="h-4 w-4" />

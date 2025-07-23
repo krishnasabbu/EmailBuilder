@@ -25,7 +25,7 @@ const OnboardTab: React.FC<OnboardTabProps> = ({
   handleOnboardFieldChange,
 }) => (
   <div className="space-y-6">
-      <Card className="p-6">
+      <Card className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Alert Information
         </h3>
@@ -38,7 +38,7 @@ const OnboardTab: React.FC<OnboardTabProps> = ({
         />
       </Card>
       
-      <Card className="p-6">
+      <Card className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500">
         <div className="flex items-center space-x-3 mb-6">
           <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -70,7 +70,7 @@ const OnboardTab: React.FC<OnboardTabProps> = ({
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
           Onboard Configuration Fields
         </h3>

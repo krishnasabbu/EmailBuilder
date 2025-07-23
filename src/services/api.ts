@@ -164,6 +164,58 @@ export const api = createApi({
     getJiraData: builder.query<any, string>({
       query: (jiraId) => `/jiraData?jiraId=${jiraId}`,
     }),
+
+    // Product endpoints
+    getProducts: builder.query<any[], void>({
+      query: () => '/products',
+      providesTags: ['Product'],
+    }),
+
+    // Test execution endpoints
+    runTest: builder.mutation<any, any>({
+      query: (testData) => ({
+        url: '/testRuns',
+        method: 'POST',
+        body: {
+          ...testData,
+          id: Date.now().toString(),
+          status: 'completed',
+          result: 'success',
+          executedAt: new Date().toISOString(),
+        },
+      }),
+    }),
+
+    importAlert: builder.mutation<any, any>({
+      query: (alertData) => ({
+        url: '/test/import',
+        method: 'POST',
+        body: alertData,
+      }),
+    }),
+
+    // Test history endpoints
+    getTestHistory: builder.query<any[], void>({
+      query: () => '/testHistory',
+      providesTags: ['TestHistory'],
+    }),
+
+    retryTest: builder.mutation<any, { id: string; testData: any }>({
+      query: ({ id, testData }) => ({
+        url: '/test/retry',
+        method: 'POST',
+        body: {
+          originalTestId: id,
+          ...testData,
+          id: Date.now().toString(),
+          run: `#${String(Date.now()).slice(-3)}`,
+          status: Math.random() > 0.3 ? 'Passed' : 'Failed',
+          lastRunDate: new Date().toISOString(),
+          initiatedBy: 'current.user@company.com',
+        },
+      }),
+      invalidatesTags: ['TestHistory'],
+    }),
   }),
 });
 
@@ -188,4 +240,9 @@ export const {
   useUpdateAlertMutation,
   useDeleteAlertMutation,
   useGetJiraDataQuery,
+  useGetProductsQuery,
+  useRunTestMutation,
+  useImportAlertMutation,
+  useGetTestHistoryQuery,
+  useRetryTestMutation,
 } = api;

@@ -13,8 +13,8 @@ const TemplateMappingTab: React.FC<TemplateMappingTabProps> = ({
   handleTemplateSelect,
 }) => {
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+    <Card className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-blue-500">
+      <h3 className="text-lg font-semibold text-primary-700 dark:text-white mb-6">
         Select Templates for Onboarding
       </h3>
       
@@ -42,8 +42,8 @@ const TemplateMappingTab: React.FC<TemplateMappingTabProps> = ({
         ))}
       </div>
       
-      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-        <p className="text-sm text-blue-700 dark:text-blue-300">
+      <div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+        <p className="text-sm text-primary-700 dark:text-primary-300">
           Selected: {selectedTemplates.length} template(s)
         </p>
       </div>

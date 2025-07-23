@@ -46,10 +46,10 @@ const RbacPermissionsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-primary-700 dark:text-white">
             Permissions Matrix
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -58,10 +58,10 @@ const RbacPermissionsPage: React.FC = () => {
         </div>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500">
         <div className="flex items-center space-x-3 mb-6">
-          <Key className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <Key className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+          <h2 className="text-xl font-semibold text-primary-700 dark:text-white">
             Role Permissions Matrix
           </h2>
         </div>
@@ -90,12 +90,12 @@ const RbacPermissionsPage: React.FC = () => {
               {roles.map((role) => (
                 <tr
                   key={role.id}
-                  className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  className="border-b border-gray-100 dark:border-gray-800 hover:bg-primary-50 dark:hover:bg-gray-800/50 transition-all duration-200"
                 >
                   <td className="py-4 px-6">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                      <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-primary-600 dark:text-primary-400">
                           {role.name.charAt(0)}
                         </span>
                       </div>
@@ -135,32 +135,32 @@ const RbacPermissionsPage: React.FC = () => {
           </table>
         </div>
 
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+        <div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+          <h3 className="font-medium text-primary-900 dark:text-primary-100 mb-2">
             Permission Definitions
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <span className="font-medium text-green-700 dark:text-green-300">Create:</span>
-              <span className="text-blue-700 dark:text-blue-300 ml-2">
+              <span className="text-primary-700 dark:text-primary-300 ml-2">
                 Add new templates and resources
               </span>
             </div>
             <div>
-              <span className="font-medium text-blue-700 dark:text-blue-300">Read:</span>
-              <span className="text-blue-700 dark:text-blue-300 ml-2">
+              <span className="font-medium text-primary-700 dark:text-primary-300">Read:</span>
+              <span className="text-primary-700 dark:text-primary-300 ml-2">
                 View templates and reports
               </span>
             </div>
             <div>
               <span className="font-medium text-yellow-700 dark:text-yellow-300">Update:</span>
-              <span className="text-blue-700 dark:text-blue-300 ml-2">
+              <span className="text-primary-700 dark:text-primary-300 ml-2">
                 Modify existing templates
               </span>
             </div>
             <div>
               <span className="font-medium text-red-700 dark:text-red-300">Delete:</span>
-              <span className="text-blue-700 dark:text-blue-300 ml-2">
+              <span className="text-primary-700 dark:text-primary-300 ml-2">
                 Remove templates and data
               </span>
             </div>

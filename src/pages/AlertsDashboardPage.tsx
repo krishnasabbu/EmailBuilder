@@ -1,21 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetAlertsQuery, useDeleteAlertMutation } from '../services/api';
-import { useAppSelector } from '../hooks/useRedux';
+import { usePermissions } from '../hooks/useRedux';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Plus, Edit, Trash2, AlertTriangle, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, AlertTriangle, Calendar, FileText } from 'lucide-react';
 
 const AlertsDashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { permissions } = useAppSelector(state => state.auth);
+  const { hasPermission } = usePermissions();
   
   const { data: alerts = [], isLoading, error } = useGetAlertsQuery();
   const [deleteAlert] = useDeleteAlertMutation();
 
-  const hasPermission = (permission: string) => {
-    return permissions.includes(permission as any);
-  };
 
   const handleDelete = async (alertId: string) => {
     if (confirm('Are you sure you want to delete this alert?')) {
@@ -72,7 +69,7 @@ const AlertsDashboardPage: React.FC = () => {
           </p>
         </div>
         {hasPermission('create') && (
-          <Button onClick={() => navigate('/alert-onboard')}>
+          <Button onClick={() => navigate('/alert-onboard')} className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
             <Plus className="h-5 w-5 mr-2" />
             New Alert Onboard
           </Button>
@@ -167,10 +164,10 @@ const AlertsDashboardPage: React.FC = () => {
             <div className="flex space-x-2 mt-6">
               {hasPermission('update') && (
                 <Button
-                  variant="primary"
+                  variant="outline"
                   size="sm"
                   onClick={() => handleEdit(alert.id)}
-                  className="flex-1"
+                  className="flex-1 border-primary-300 text-primary-600 hover:bg-primary-50"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit

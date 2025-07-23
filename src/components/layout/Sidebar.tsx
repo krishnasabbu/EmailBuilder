@@ -1,16 +1,19 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useAppSelector } from '../../hooks/useRedux';
+import { usePermissions } from '../../hooks/useRedux';
 import { 
   Home, 
-  Plus,
-  FileText,
+  Plus, 
+  Mail, 
+  FileText, 
+  Smartphone, 
   TestTube, 
   Users,
   Shield,
   Key,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,11 +22,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
-  const { permissions } = useAppSelector(state => state.auth);
-  
-  const hasPermission = (permission: string) => {
-    return permissions.includes(permission as any);
-  };
+  const { hasPermission } = usePermissions();
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home, permission: 'read' },
@@ -40,22 +39,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   return (
     <div className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-64'
-    } flex flex-col h-full`}>
+    } flex flex-col h-full shadow-lg`}>
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <h1 className="text-xl font-bold text-gray-800 dark:text-white">
-              Template Builder
-            </h1>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-primary-700 dark:text-white">
+                  Alerts Studio
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Wells Fargo
+                </p>
+              </div>
+            </div>
           )}
           <button
             onClick={onToggle}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 rounded-lg hover:bg-primary-50 dark:hover:bg-gray-700 transition-colors"
           >
             {isCollapsed ? (
-              <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <ChevronRight className="h-5 w-5 text-primary-600 dark:text-gray-400" />
             ) : (
-              <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              <ChevronLeft className="h-5 w-5 text-primary-600 dark:text-gray-400" />
             )}
           </button>
         </div>
@@ -69,8 +78,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             className={({ isActive }) =>
               `flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                 isActive
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  ? 'bg-gradient-to-r from-primary-100 to-primary-50 text-primary-700 dark:bg-primary-900 dark:text-primary-200 shadow-md border-r-2 border-primary-500'
+                  : 'text-gray-700 hover:bg-primary-50 dark:text-gray-300 dark:hover:bg-gray-700 hover:text-primary-600'
               }`
             }
           >

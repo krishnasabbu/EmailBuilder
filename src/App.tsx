@@ -15,6 +15,7 @@ import RbacUsersPage from './pages/RbacUsersPage';
 import RbacRolesPage from './pages/RbacRolesPage';
 import RbacPermissionsPage from './pages/RbacPermissionsPage';
 import AlertsDashboardPage from './pages/AlertsDashboardPage';
+import NotificationTestExecutePage from './pages/NotificationTestExecutePage';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAppSelector(state => state.auth);
@@ -94,6 +95,16 @@ const AppContent: React.FC = () => {
               <ProtectedRoute>
                 <Layout>
                   <NotificationTestPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/tests/execute"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <NotificationTestExecutePage />
                 </Layout>
               </ProtectedRoute>
             }

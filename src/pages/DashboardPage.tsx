@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAppSelector } from '../hooks/useRedux';
+import { useAppSelector, usePermissions } from '../hooks/useRedux';
 import { useGetTemplatesQuery, useDeleteTemplateMutation } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
@@ -8,7 +8,7 @@ import { Plus, Edit, Eye, Mail, Smartphone, Globe, Calendar, Trash2 } from 'luci
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { permissions } = useAppSelector(state => state.auth);
+  const { hasPermission } = usePermissions();
   
   const { data: templates = [], isLoading, error } = useGetTemplatesQuery();
   const [deleteTemplate] = useDeleteTemplateMutation();
@@ -24,9 +24,6 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const hasPermission = (permission: string) => {
-    return permissions.includes(permission as any);
-  };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -70,10 +67,10 @@ const DashboardPage: React.FC = () => {
     );
   }
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-primary-700 dark:text-white">
             Template Dashboard
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -81,7 +78,10 @@ const DashboardPage: React.FC = () => {
           </p>
         </div>
         {hasPermission('create') && (
-          <Button onClick={() => navigate('/templates/create')}>
+          <Button 
+            onClick={() => navigate('/templates/create')}
+            className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          >
             <Plus className="h-5 w-5 mr-2" />
             Create Template
           </Button>
@@ -92,7 +92,7 @@ const DashboardPage: React.FC = () => {
         {templates.map((template) => (
           <Card 
             key={template.id} 
-            className="p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+            className="p-6 hover:shadow-xl transition-all duration-300 cursor-pointer bg-white hover:bg-gradient-to-br hover:from-white hover:to-gray-50 border-l-4 border-l-primary-500"
             onClick={() => handleTemplateClick(template)}
           >
             <div className="flex items-start justify-between mb-4">
@@ -124,8 +124,8 @@ const DashboardPage: React.FC = () => {
               </div>
               
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Channels:</span>
-                <span className="text-gray-900 dark:text-white">{template.channel}</span>
+                <span className="text-gray-500 dark:text-gray-400">Channel:</span>
+                <span className="text-gray-900 dark:text-white">1</span>
               </div>
               
               <div className="flex items-center justify-between text-sm">
@@ -139,7 +139,7 @@ const DashboardPage: React.FC = () => {
               <div className="flex flex-wrap gap-1 mt-3">
                 <span
                     key={template.channel}
-                    className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full text-xs"
+                    className="px-2 py-1 bg-accent-100 text-accent-800 dark:bg-accent-900 dark:text-accent-200 rounded-full text-xs"
                   >
                     {template.channel}
                   </span>
@@ -158,10 +158,10 @@ const DashboardPage: React.FC = () => {
               </Button>
               {hasPermission('update') && (
                 <Button
-                  variant="primary"
+                  variant="outline"
                   size="sm"
                   onClick={() => handleTemplateClick(template)}
-                  className="flex-1"
+                  className="flex-1 border-primary-300 text-primary-600 hover:bg-primary-50"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
@@ -194,7 +194,10 @@ const DashboardPage: React.FC = () => {
             Create your first notification template to get started
           </p>
           {hasPermission('create') && (
-            <Button onClick={() => navigate('/templates/create')}>
+            <Button 
+              onClick={() => navigate('/templates/create')}
+              className="bg-primary-600 hover:bg-primary-700 text-white"
+            >
               <Plus className="h-5 w-5 mr-2" />
               Create Template
             </Button>

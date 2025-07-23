@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../hooks/useRedux';
-import { setUsers, addUser, updateUser, deleteUser } from '../store/slices/rbacSlice';
+import { usePermissions } from '../hooks/useRedux';
+import { useGetUsersQuery, useCreateUserMutation, useUpdateUserMutation, useDeleteUserMutation } from '../services/api';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import InputField from '../components/ui/InputField';
 import Dropdown from '../components/ui/Dropdown';
 import { Plus, Edit, Trash2, UserCheck, UserX } from 'lucide-react';
-import usersData from '../data/users.json';
 
 const RbacUsersPage: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { users } = useAppSelector(state => state.rbac);
-  const { permissions } = useAppSelector(state => state.auth);
+  const { hasPermission } = usePermissions();
+  
+  const { data: users = [], isLoading, error } = useGetUsersQuery();
+  const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
+  
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -21,13 +24,7 @@ const RbacUsersPage: React.FC = () => {
     status: 'active' as const,
   });
 
-  useEffect(() => {
-    dispatch(setUsers(usersData));
-  }, [dispatch]);
 
-  const hasPermission = (permission: string) => {
-    return permissions.includes(permission as any);
-  };
 
   const roleOptions = [
     { value: 'Admin', label: 'Admin' },
@@ -40,31 +37,31 @@ const RbacUsersPage: React.FC = () => {
     { value: 'inactive', label: 'Inactive' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingUser) {
-      dispatch(updateUser({
-        ...editingUser,
-        ...formData,
-        updatedAt: new Date().toISOString(),
-      }));
-      setEditingUser(null);
-    } else {
-      dispatch(addUser({
-        id: Date.now().toString(),
-        ...formData,
-        createdAt: new Date().toISOString(),
-      }));
+    try {
+      if (editingUser) {
+        await updateUser({
+          ...editingUser,
+          ...formData,
+        }).unwrap();
+        setEditingUser(null);
+      } else {
+        await createUser(formData).unwrap();
+      }
+      
+      setFormData({
+        username: '',
+        email: '',
+        role: 'Viewer',
+        status: 'active',
+      });
+      setShowAddForm(false);
+    } catch (error) {
+      console.error('Failed to save user:', error);
+      alert('Failed to save user. Please try again.');
     }
-    
-    setFormData({
-      username: '',
-      email: '',
-      role: 'Viewer',
-      status: 'active',
-    });
-    setShowAddForm(false);
   };
 
   const handleEdit = (user: any) => {
@@ -78,9 +75,14 @@ const RbacUsersPage: React.FC = () => {
     setShowAddForm(true);
   };
 
-  const handleDelete = (userId: string) => {
+  const handleDelete = async (userId: string) => {
     if (confirm('Are you sure you want to delete this user?')) {
-      dispatch(deleteUser(userId));
+      try {
+        await deleteUser(userId).unwrap();
+      } catch (error) {
+        console.error('Failed to delete user:', error);
+        alert('Failed to delete user. Please try again.');
+      }
     }
   };
 
@@ -110,12 +112,28 @@ const RbacUsersPage: React.FC = () => {
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-500 mb-4">Failed to load users</div>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-primary-700 dark:text-white">
             User Management
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -123,7 +141,10 @@ const RbacUsersPage: React.FC = () => {
           </p>
         </div>
         {hasPermission('create') && (
-          <Button onClick={() => setShowAddForm(true)}>
+          <Button 
+            onClick={() => setShowAddForm(true)}
+            className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          >
             <Plus className="h-5 w-5 mr-2" />
             Add User
           </Button>
@@ -131,8 +152,8 @@ const RbacUsersPage: React.FC = () => {
       </div>
 
       {showAddForm && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+        <Card className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500">
+          <h2 className="text-xl font-semibold text-primary-700 dark:text-white mb-4">
             {editingUser ? 'Edit User' : 'Add New User'}
           </h2>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -164,12 +185,17 @@ const RbacUsersPage: React.FC = () => {
               required
             />
             <div className="md:col-span-2 flex space-x-3">
-              <Button type="submit" variant="primary">
+              <Button 
+                type="submit" 
+                variant="primary"
+                className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
                 {editingUser ? 'Update User' : 'Add User'}
               </Button>
               <Button
                 type="button"
                 variant="outline"
+                className="border-primary-300 text-primary-600 hover:bg-primary-50"
                 onClick={() => {
                   setShowAddForm(false);
                   setEditingUser(null);
@@ -188,7 +214,7 @@ const RbacUsersPage: React.FC = () => {
         </Card>
       )}
 
-      <Card className="p-6">
+      <Card className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-blue-500">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -219,7 +245,7 @@ const RbacUsersPage: React.FC = () => {
               {users.map((user) => (
                 <tr
                   key={user.id}
-                  className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  className="border-b border-gray-100 dark:border-gray-800 hover:bg-primary-50 dark:hover:bg-gray-800/50 transition-all duration-200"
                 >
                   <td className="py-3 px-4 text-gray-900 dark:text-white font-medium">
                     {user.username}
@@ -251,6 +277,7 @@ const RbacUsersPage: React.FC = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(user)}
+                            className="border-primary-300 text-primary-600 hover:bg-primary-50"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -260,6 +287,7 @@ const RbacUsersPage: React.FC = () => {
                             variant="danger"
                             size="sm"
                             onClick={() => handleDelete(user.id)}
+                           disabled={isDeleting}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

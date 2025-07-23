@@ -44,7 +44,7 @@ const TemplateCreationForm: React.FC<TemplateCreationFormProps> = ({
   handleNext,
 }) => {
   return (
-    <Card className="p-8">
+    <Card className="p-8 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary-500">
       <form onSubmit={handleNext} className="space-y-6">
           <InputField
             label="Message Type ID"
@@ -86,7 +86,7 @@ const TemplateCreationForm: React.FC<TemplateCreationFormProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1"
+              className="flex-1 bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center">
@@ -106,7 +106,7 @@ const TemplateCreationForm: React.FC<TemplateCreationFormProps> = ({
               variant="outline"
               onClick={handleCancel}
               disabled={isSubmitting}
-              className="flex-1"
+              className="flex-1 border-primary-300 text-primary-600 hover:bg-primary-50"
             >
               <X className="h-5 w-5 mr-2" />
               Cancel

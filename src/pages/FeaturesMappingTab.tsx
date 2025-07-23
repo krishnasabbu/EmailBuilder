@@ -32,8 +32,8 @@ const FeaturesMappingTab: React.FC<FeaturesMappingTabProps> = ({
   };
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+    <Card className="p-6 bg-white hover:shadow-xl transition-all duration-300 border-l-4 border-l-purple-500">
+      <h3 className="text-lg font-semibold text-primary-700 dark:text-white mb-6">
         Features Mapping
       </h3>
 
@@ -58,7 +58,7 @@ const FeaturesMappingTab: React.FC<FeaturesMappingTabProps> = ({
 
         {/* Buttons */}
         <div className="col-span-2 flex flex-col justify-center space-y-2">
-          <Button variant="outline" size="sm" onClick={() => moveAllFeatures('toSelected')} className="w-full">
+          <Button variant="outline" size="sm" onClick={() => moveAllFeatures('toSelected')} className="w-full border-primary-300 text-primary-600 hover:bg-primary-50">
             <ChevronsRight className="h-4 w-4" />
           </Button>
           <Button
@@ -68,7 +68,7 @@ const FeaturesMappingTab: React.FC<FeaturesMappingTabProps> = ({
               const next = availableFeatures[0];
               if (next) moveFeature(next, 'toSelected');
             }}
-            className="w-full"
+            className="w-full border-primary-300 text-primary-600 hover:bg-primary-50"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -79,11 +79,11 @@ const FeaturesMappingTab: React.FC<FeaturesMappingTabProps> = ({
               const last = selectedFeatures[selectedFeatures.length - 1];
               if (last) moveFeature(last, 'toAvailable');
             }}
-            className="w-full"
+            className="w-full border-primary-300 text-primary-600 hover:bg-primary-50"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => moveAllFeatures('toAvailable')} className="w-full">
+          <Button variant="outline" size="sm" onClick={() => moveAllFeatures('toAvailable')} className="w-full border-primary-300 text-primary-600 hover:bg-primary-50">
             <ChevronsLeft className="h-4 w-4" />
           </Button>
         </div>
