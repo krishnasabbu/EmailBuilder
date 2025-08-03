@@ -1,53 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/useRedux';
-import { useGetTemplateQuery, useCreateTemplateMutation, useUpdateTemplateMutation } from '../services/api';
-import { setCurrentTemplate, saveTemplate } from '../store/slices/emailEditorSlice';
+import {
+  useGetTemplateQuery,
+  useCreateTemplateMutation,
+  useUpdateTemplateMutation,
+} from '../services/api';
+import {
+  setCurrentTemplate,
+  saveTemplate,
+} from '../store/slices/emailEditorSlice';
 import Tabs from '../components/ui/Tabs';
 import TemplateDesignStep from './TemplateDesignStep';
 import TemplateCreationForm from './TemplateCreationForm';
 import Button from '../components/ui/Button';
 import { Download, Eye, Languages, Save, X } from 'lucide-react';
+import DynamicVariablesTab from './DynamicVariablesTab';
+import { v4 as uuidv4 } from 'uuid';
 
 const CreateTemplatePage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { currentTemplate } = useAppSelector(state => state.emailEditor);
-  const { permissions } = useAppSelector(state => state.auth);
+  const { currentTemplate } = useAppSelector((state) => state.emailEditor);
+  const { permissions } = useAppSelector((state) => state.auth);
+
   const [templateId, setTemplateId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('creation');
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { data: existingTemplate, isLoading: isLoadingTemplate } = useGetTemplateQuery(templateId!, {
-    skip: !templateId,
-  });
-  
-  const [createTemplate, { isLoading: isCreating }] = useCreateTemplateMutation();
-  const [updateTemplate, { isLoading: isUpdating }] = useUpdateTemplateMutation();
-  
+
   const [formData, setFormData] = useState({
     messageTypeId: '',
     messageName: '',
     channel: '',
     language: '',
   });
-  
 
-  // Check if we're editing an existing template
-  React.useEffect(() => {
+  const [dynamicVariables, setDynamicVariables] = useState<
+    { id: string; variableName: string; formatter: string }[]
+  >([]);
+
+  const { data: existingTemplate, isLoading: isLoadingTemplate } =
+    useGetTemplateQuery(templateId!, {
+      skip: !templateId,
+    });
+
+  const [createTemplate, { isLoading: isCreating }] = useCreateTemplateMutation();
+  const [updateTemplate, { isLoading: isUpdating }] = useUpdateTemplateMutation();
+
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
-    
     if (id) {
       setTemplateId(id);
       setIsEditing(true);
     }
   }, []);
 
-  // Load existing template data
-  React.useEffect(() => {
+  useEffect(() => {
     if (existingTemplate) {
       setFormData({
         messageTypeId: existingTemplate.messageTypeId,
@@ -55,41 +66,27 @@ const CreateTemplatePage: React.FC = () => {
         channel: existingTemplate.channel,
         language: existingTemplate.language,
       });
+      setDynamicVariables(existingTemplate.dynamicVariables || []);
       dispatch(setCurrentTemplate(existingTemplate));
     }
   }, [existingTemplate, dispatch]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
-    console.log("formData === "+JSON.stringify(formData));
-    
-    if (!formData.messageTypeId.trim()) {
+    if (!formData.messageTypeId.trim())
       newErrors.messageTypeId = 'Message Type ID is required';
-    }
-    
-    if (!formData.messageName.trim()) {
+    if (!formData.messageName.trim())
       newErrors.messageName = 'Message Name is required';
-    }
-    
-    if (!formData.channel) {
-      newErrors.channels = 'channel must be selected';
-    }
-    
-    if (!formData.language) {
-      newErrors.language = 'Language is required';
-    }
-    
+    if (!formData.channel) newErrors.channel = 'Channel must be selected';
+    if (!formData.language) newErrors.language = 'Language is required';
     setErrors(newErrors);
-    console.log("error === "+JSON.stringify(newErrors));
     return Object.keys(newErrors).length === 0;
   };
 
   const handleNext = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-    
+
     const templateData = {
       id: isEditing ? templateId! : Date.now().toString(),
       messageTypeId: formData.messageTypeId.trim(),
@@ -100,10 +97,14 @@ const CreateTemplatePage: React.FC = () => {
       content: '',
       createdAt: existingTemplate?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      type: formData.channel.includes('External Email') || formData.channel.includes('Secure Inbox') ? 'Email' : 'Push',
+      type: formData.channel.includes('External Email') ||
+        formData.channel.includes('Secure Inbox')
+        ? 'Email'
+        : 'Push',
       widgets: existingTemplate?.widgets || [],
+      dynamicVariables,
     };
-    
+
     dispatch(setCurrentTemplate(templateData));
     setActiveTab('design');
   };
@@ -115,11 +116,17 @@ const CreateTemplatePage: React.FC = () => {
   const handleSaveTemplate = async () => {
     if (currentTemplate) {
       try {
+        const updatedTemplate = {
+          ...currentTemplate,
+          dynamicVariables, // ← inject latest values before saving
+        };
+
         if (isEditing) {
-          await updateTemplate(currentTemplate).unwrap();
+          await updateTemplate(updatedTemplate).unwrap();
         } else {
-          await createTemplate(currentTemplate).unwrap();
+          await createTemplate(updatedTemplate).unwrap();
         }
+
         navigate('/dashboard');
       } catch (error) {
         console.error('Failed to save template:', error);
@@ -128,9 +135,71 @@ const CreateTemplatePage: React.FC = () => {
     }
   };
 
-  const hasPermission = (permission: string) => {
-    return permissions.includes(permission as any);
+  const handleAddVariable = () => {
+    setDynamicVariables((prev) => [
+      ...prev,
+      { id: uuidv4(), variableName: '', formatter: '' },
+    ]);
   };
+
+  const handleRemoveVariable = (id: string) => {
+    setDynamicVariables((prev) => prev.filter((v) => v.id !== id));
+  };
+
+  const handleVariableChange = (
+    id: string,
+    field: 'variableName' | 'formatter',
+    value: string
+  ) => {
+    setDynamicVariables((prev) =>
+      prev.map((v) => (v.id === id ? { ...v, [field]: value } : v))
+    );
+  };
+
+  const hasPermission = (permission: string) =>
+    permissions.includes(permission as any);
+
+  const isEmailTemplate =
+    formData.channel === 'External Email' ||
+    formData.channel?.includes('Secure Inbox');
+
+  const tabs = [
+    {
+      id: 'creation',
+      label: 'Template Creation',
+      content: (
+        <TemplateCreationForm
+          formData={formData}
+          errors={errors}
+          isSubmitting={isSubmitting}
+          setFormData={setFormData}
+          handleCancel={handleCancel}
+          handleNext={handleNext}
+        />
+      ),
+    },
+    {
+      id: 'variables',
+      label: 'Dynamic Variables',
+      content: (
+        <DynamicVariablesTab
+          dynamicVariables={dynamicVariables}
+          onAddVariable={handleAddVariable}
+          onRemoveVariable={handleRemoveVariable}
+          onChangeVariable={handleVariableChange}
+        />
+      ),
+    },
+    {
+      id: 'design',
+      label: !formData.channel
+        ? 'Template Design'
+        : isEmailTemplate
+        ? 'Email Template Design'
+        : 'Push/SMS Template Design',
+      content: <TemplateDesignStep isEmailTemplate={isEmailTemplate} />,
+    },
+  ];
 
   if (isLoadingTemplate) {
     return (
@@ -140,43 +209,19 @@ const CreateTemplatePage: React.FC = () => {
     );
   }
 
-  const isEmailTemplate = formData.channel === 'External Email' || formData.channel?.includes('Secure Inbox');
-
-  const tabs = [
-    {
-      id: 'creation',
-      label: 'Template Creation',
-      content: <TemplateCreationForm
-                  formData={formData}
-                  errors={errors}
-                  isSubmitting={isSubmitting}
-                  setFormData={setFormData}
-                  handleCancel={handleCancel}
-                  handleNext={handleNext}
-                />,
-    },
-    {
-      id: 'design',
-      label: !formData.channel
-                  ? 'Template Design'
-                  : isEmailTemplate
-                    ? 'Email Template Design'
-                    : 'Push/SMS Template Design',
-      content: <TemplateDesignStep
-                  isEmailTemplate={isEmailTemplate}
-                />,
-    },
-  ];
-
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-primary-700 dark:text-white">
-            {formData.messageName ? formData.messageName : 'Create New Template'}
+            {formData.messageName
+              ? formData.messageName
+              : 'Create New Template'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {activeTab === 'creation' ? 'Set up template metadata' : 'Design your template layout'}
+            {activeTab === 'creation'
+              ? 'Set up template metadata'
+              : 'Design your template layout'}
           </p>
         </div>
         <div className="flex flex-wrap gap-3 ml-4">
@@ -187,23 +232,20 @@ const CreateTemplatePage: React.FC = () => {
             </Button>
           )}
 
-          {(activeTab === 'design') && (
+          {activeTab === 'design' && (
             <>
               <Button variant="outline">
                 <Eye className="h-4 w-4 mr-2" />
                 Preview
               </Button>
-
               <Button variant="outline">
                 <Languages className="h-4 w-4 mr-2" />
                 Translate to Spanish
               </Button>
-
               <Button variant="outline">
                 <Download className="h-4 w-4 mr-2" />
                 Download Format Requirements
               </Button>
-
               <Button variant="outline" onClick={() => navigate('/dashboard')}>
                 <X className="h-4 w-4 mr-2" />
                 Cancel
