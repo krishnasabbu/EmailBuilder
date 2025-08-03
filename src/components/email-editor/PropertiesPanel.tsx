@@ -34,13 +34,11 @@ const PropertiesPanel: React.FC = () => {
   const isWidget = 'components' in selectedComponent;
 
   const handleContentChange = (content: string) => {
-    if (!isWidget) {
-      dispatch(
-        updateComponent({
-          ...selectedComponent,
-          content,
-        }),
-      );
+    if (!isWidget && selectedComponent?.id) {
+      dispatch(updateComponent({
+        id: selectedComponent.id,
+        changes: { content },
+      }));
     }
   };
 
@@ -112,20 +110,20 @@ const PropertiesPanel: React.FC = () => {
 
             {!isFullScreen && (
               <div className="relative border rounded-md pt-10">
-                <div className="absolute top-2 right-2 z-10">
-                  <button
-                    onClick={() => setIsFullScreen(true)}
-                    className="bg-white dark:bg-gray-800 rounded-full p-1 shadow hover:text-blue-600 text-gray-500"
-                    title="Expand Editor"
-                  >
-                    <Maximize2 className="w-5 h-5" />
-                  </button>
-                </div>
-                <ContentEditor
-                  value={selectedComponent.content}
-                  onChange={handleContentChange}
-                />
-              </div>
+            <div className="absolute top-2 right-2 z-10">
+              <button
+                onClick={() => setIsFullScreen(true)}
+                className="bg-white dark:bg-gray-800 rounded-full p-1 shadow hover:text-blue-600 text-gray-500"
+                title="Expand Editor"
+              >
+                <Maximize2 className="w-5 h-5" />
+              </button>
+            </div>
+            <ContentEditor
+              value={selectedComponent.content}
+              onChange={handleContentChange}
+            />
+          </div>
             )}
           </div>
         </div>
