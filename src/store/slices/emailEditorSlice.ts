@@ -37,6 +37,11 @@ export interface EmailTemplate {
   language: string,
   type: string,
   content: string,
+  dynamicVariables?: Array<{
+    id: string;
+    variableName: string;
+    formatter: string;
+  }>;
   widgets: Widget[];
   createdAt: string;
   updatedAt: string;
@@ -161,19 +166,34 @@ const emailEditorSlice = createSlice({
         }
       }
     },
-    updateComponent: (state, action: PayloadAction<EmailComponent>) => {
-      const updatedComponent = action.payload;
+    updateComponent: (
+      state,
+      action: PayloadAction<{ id: string; changes: Partial<EmailComponent> }>
+    ) => {
+      const { id, changes } = action.payload;
 
       for (const widget of state.widgets) {
-        const componentIndex = widget.components.findIndex(c => c.id === updatedComponent.id);
+        const componentIndex = widget.components.findIndex(c => c.id === id);
         if (componentIndex !== -1) {
-          // Update the component immutably
-          widget.components[componentIndex] = { ...updatedComponent };
+          // Replace the specific component immutably
+          const updatedComponent = {
+            ...widget.components[componentIndex],
+            ...changes,
+          };
 
-          // ✅ Update selectedComponent so UI re-renders
-          state.selectedComponent = { ...updatedComponent };
+          // Update in widget
+          widget.components = [
+            ...widget.components.slice(0, componentIndex),
+            updatedComponent,
+            ...widget.components.slice(componentIndex + 1),
+          ];
 
-          // ✅ (Optional) Update currentTemplate.widgets if needed
+          // Also update selectedComponent if it's the one being edited
+          if (state.selectedComponent?.id === id) {
+            state.selectedComponent = { ...updatedComponent };
+          }
+
+          // If currentTemplate exists, update its widgets
           if (state.currentTemplate) {
             state.currentTemplate.widgets = [...state.widgets];
           }
@@ -223,8 +243,18 @@ const emailEditorSlice = createSlice({
         }));
       }
     },
-    selectComponent: (state, action: PayloadAction<EmailComponent | Widget | null>) => {
-      state.selectedComponent = action.payload;
+    selectComponent: (
+      state,
+      action: PayloadAction<EmailComponent | Widget | null>
+    ) => {
+      const payload = action.payload;
+
+      if (payload) {
+        // Clone to prevent shared references
+        state.selectedComponent = JSON.parse(JSON.stringify(payload));
+      } else {
+        state.selectedComponent = null;
+      }
     },
     setDraggedComponent: (state, action: PayloadAction<EmailComponent | null>) => {
       state.draggedComponent = action.payload;
