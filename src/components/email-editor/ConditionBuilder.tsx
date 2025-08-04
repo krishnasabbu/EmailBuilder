@@ -15,15 +15,10 @@ type ConditionGroup = {
 type ConditionBuilderProps = {
   groups: ConditionGroup[];
   onChange: (groups: ConditionGroup[]) => void;
+  fields: { label: string; value: string }[];
 };
 
-export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({ groups = [], onChange }) => {
-  const fields = [
-    { label: 'User Type', value: 'user.type' },
-    { label: 'Account Balance', value: 'user.balance' },
-    { label: 'Country', value: 'user.country' },
-    { label: 'Email Verified', value: 'user.emailVerified' },
-  ];
+export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({ groups = [], onChange, fields }) => {
 
   const operators = ['is', 'is not', '>', '<', '>=', '<='];
 
