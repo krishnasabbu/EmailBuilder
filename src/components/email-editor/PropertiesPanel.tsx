@@ -14,8 +14,12 @@ import ContentEditor from './ContentEditor';
 const PropertiesPanel: React.FC = () => {
   const dispatch = useAppDispatch();
   const { selectedComponent } = useAppSelector((state) => state.emailEditor);
+  const { currentTemplate } = useAppSelector((state) => state.emailEditor);
   const [showConditionModal, setShowConditionModal] = React.useState(false);
   const [isFullScreen, setIsFullScreen] = React.useState(false);
+
+  console.log("component === "+JSON.stringify(selectComponent))
+  console.log("component === "+JSON.stringify(currentTemplate))
 
   if (!selectedComponent) {
     return (
@@ -143,16 +147,20 @@ const PropertiesPanel: React.FC = () => {
                   <ConditionBuilder
                     groups={selectedComponent.properties?.conditionRules || []}
                     onChange={(rules) =>
-                      dispatch(
-                        updateComponent({
-                          ...selectedComponent,
+                      dispatch(updateComponent({
+                        id: selectedComponent.id,
+                        changes: {
                           properties: {
                             ...selectedComponent.properties,
                             conditionRules: rules,
                           },
-                        }),
-                      )
+                        },
+                      }))
                     }
+                    fields={(currentTemplate?.dynamicVariables || []).map(dv => ({
+                      label: dv.variableName,
+                      value: dv.variableName, // using variableName as the internal value too
+                    }))}
                   />
                   <div className="mt-4 flex justify-end space-x-2">
                     <Button
