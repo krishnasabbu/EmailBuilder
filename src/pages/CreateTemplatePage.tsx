@@ -8,7 +8,6 @@ import {
 } from '../services/api';
 import {
   setCurrentTemplate,
-  saveTemplate,
 } from '../store/slices/emailEditorSlice';
 import Tabs from '../components/ui/Tabs';
 import TemplateDesignStep from './TemplateDesignStep';
@@ -29,6 +28,7 @@ const CreateTemplatePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [enabledTabs, setEnabledTabs] = useState<string[]>(['creation']);
 
   const [formData, setFormData] = useState({
     messageTypeId: '',
@@ -46,8 +46,8 @@ const CreateTemplatePage: React.FC = () => {
       skip: !templateId,
     });
 
-  const [createTemplate, { isLoading: isCreating }] = useCreateTemplateMutation();
-  const [updateTemplate, { isLoading: isUpdating }] = useUpdateTemplateMutation();
+  const [createTemplate] = useCreateTemplateMutation();
+  const [updateTemplate] = useUpdateTemplateMutation();
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -68,6 +68,7 @@ const CreateTemplatePage: React.FC = () => {
       });
       setDynamicVariables(existingTemplate.dynamicVariables || []);
       dispatch(setCurrentTemplate(existingTemplate));
+      setEnabledTabs(['creation', 'variables', 'design']);
     }
   }, [existingTemplate, dispatch]);
 
@@ -83,7 +84,7 @@ const CreateTemplatePage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = async (e: React.FormEvent) => {
+  const handleNextFromCreation = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
@@ -106,6 +107,18 @@ const CreateTemplatePage: React.FC = () => {
     };
 
     dispatch(setCurrentTemplate(templateData));
+    setEnabledTabs(['creation', 'variables']);
+    setActiveTab('variables');
+  };
+
+  const handleNextFromVariables = () => {
+    dispatch(
+      setCurrentTemplate({
+        ...currentTemplate!,
+        dynamicVariables,
+      })
+    );
+    setEnabledTabs(['creation', 'variables', 'design']);
     setActiveTab('design');
   };
 
@@ -118,7 +131,7 @@ const CreateTemplatePage: React.FC = () => {
       try {
         const updatedTemplate = {
           ...currentTemplate,
-          dynamicVariables, // ← inject latest values before saving
+          dynamicVariables,
         };
 
         if (isEditing) {
@@ -174,7 +187,7 @@ const CreateTemplatePage: React.FC = () => {
           isSubmitting={isSubmitting}
           setFormData={setFormData}
           handleCancel={handleCancel}
-          handleNext={handleNext}
+          handleNext={handleNextFromCreation}
         />
       ),
     },
@@ -182,12 +195,19 @@ const CreateTemplatePage: React.FC = () => {
       id: 'variables',
       label: 'Dynamic Variables',
       content: (
-        <DynamicVariablesTab
-          dynamicVariables={dynamicVariables}
-          onAddVariable={handleAddVariable}
-          onRemoveVariable={handleRemoveVariable}
-          onChangeVariable={handleVariableChange}
-        />
+        <div className="space-y-4">
+          <DynamicVariablesTab
+            dynamicVariables={dynamicVariables}
+            onAddVariable={handleAddVariable}
+            onRemoveVariable={handleRemoveVariable}
+            onChangeVariable={handleVariableChange}
+          />
+          <div className="flex justify-end">
+            <Button onClick={handleNextFromVariables} variant="primary">
+              Next
+            </Button>
+          </div>
+        </div>
       ),
     },
     {
@@ -200,6 +220,11 @@ const CreateTemplatePage: React.FC = () => {
       content: <TemplateDesignStep isEmailTemplate={isEmailTemplate} />,
     },
   ];
+
+  const filteredTabs = tabs.map((tab) => ({
+    ...tab,
+    disabled: !enabledTabs.includes(tab.id),
+  }));
 
   if (isLoadingTemplate) {
     return (
@@ -254,7 +279,13 @@ const CreateTemplatePage: React.FC = () => {
           )}
         </div>
       </div>
-      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+      <Tabs
+        tabs={filteredTabs}
+        activeTab={activeTab}
+        onTabChange={(id) => {
+          if (enabledTabs.includes(id)) setActiveTab(id);
+        }}
+      />
     </div>
   );
 };
